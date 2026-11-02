@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vidonthedev | Roblox Developer</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -37,16 +38,18 @@ input{width:100%;padding:14px;margin:8px 0 16px;border:1px solid #ccc;border-rad
 footer{background:#171717;color:white;padding:40px 8%}
 a{color:inherit}
 button:disabled{opacity:.5;cursor:not-allowed}
+#verifiedMessage{display:none;background:#d9ff66;padding:16px;border-radius:10px;font-weight:bold;margin:15px 0}
 @media(max-width:600px){
- header{padding:14px 4%}
- .logo{font-size:18px}
- nav{gap:5px}
- nav button{font-size:12px;padding:10px}
- .hero{padding:70px 7%}
- section{padding:48px 7%}
+header{padding:14px 4%}
+.logo{font-size:18px}
+nav{gap:5px}
+nav button{font-size:12px;padding:10px}
+.hero{padding:70px 7%}
+section{padding:48px 7%}
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -58,6 +61,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </header>
 
 <main>
+
 <div class="hero">
   <div class="tag">ROBLOX GAME DEVELOPMENT</div>
   <h1>LET'S BUILD<br>SOMETHING<br>AWESOME.</h1>
@@ -148,6 +152,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <div class="tag">CUSTOMER AREA</div>
   <h2>My Account.</h2>
 
+  <p id="verifiedMessage">
+    ✓ Your email has been verified! You're now signed in.
+  </p>
+
   <div class="panel" id="authBox">
     <h3>Sign in or create an account</h3>
     <label>Email</label>
@@ -178,6 +186,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <h2>Have a project?</h2>
   <p>Email: <a href="mailto:vidhorvat939@gmail.com">vidhorvat939@gmail.com</a></p>
 </section>
+
 </main>
 
 <footer>
@@ -189,7 +198,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <script>
 const db = window.supabase.createClient(
   'https://acbjfgxtthlopvlkemhd.supabase.co',
-  'sb_publishable_INWhL1eZJEN8E2gBzifZzQ_mM3iWUdZ'
+  'sb_publishable_INWhL1eZJEN8E2gBzifZzQ_mM3iWUdZ',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
 );
 
 const PAYPAL_URL = 'https://www.paypal.com/ncp/payment/BH2T68CX9J5TG';
@@ -238,11 +254,34 @@ function removeItem() {
 async function signUp() {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
+  const message = document.getElementById('authMessage');
 
-  const {error} = await db.auth.signUp({email,password});
+  if (!email || !password) {
+    message.textContent = 'Please enter your email and password.';
+    return;
+  }
 
-  document.getElementById('authMessage').textContent =
-    error ? error.message : 'Check your email to confirm your account.';
+  if (password.length < 6) {
+    message.textContent = 'Your password must be at least 6 characters.';
+    return;
+  }
+
+  localStorage.setItem('vidonthedev_pending_verification', email);
+
+  const {error} = await db.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.location.origin + window.location.pathname
+    }
+  });
+
+  if (error) {
+    localStorage.removeItem('vidonthedev_pending_verification');
+    message.textContent = error.message;
+  } else {
+    message.textContent = 'Account created! Check your email to verify your account.';
+  }
 }
 
 async function signIn() {
@@ -259,10 +298,22 @@ async function signIn() {
 
 async function signOut() {
   await db.auth.signOut();
+  document.getElementById('verifiedMessage').style.display = 'none';
   await loadAccount();
 }
 
-async function loadAccount() {
+function isEmailConfirmationReturn() {
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const query = new URLSearchParams(window.location.search);
+
+  return (
+    hash.has('access_token') ||
+    hash.has('type') ||
+    query.has('code')
+  );
+}
+
+async function loadAccount(event = null) {
   const {data:{session}} = await db.auth.getSession();
 
   document.getElementById('authBox').style.display = session ? 'none' : 'block';
@@ -270,7 +321,27 @@ async function loadAccount() {
 
   if (!session) return;
 
+  document.getElementById('accountPanel').style.display = 'block';
   document.getElementById('userEmail').textContent = session.user.email;
+
+  const pendingEmail = localStorage.getItem('vidonthedev_pending_verification');
+  const returnedFromEmail = isEmailConfirmationReturn();
+
+  const isVerified =
+    !!session.user.email_confirmed_at ||
+    !!session.user.confirmed_at;
+
+  if (
+    isVerified &&
+    (
+      returnedFromEmail ||
+      (pendingEmail && pendingEmail.toLowerCase() === session.user.email.toLowerCase())
+    )
+  ) {
+    document.getElementById('verifiedMessage').style.display = 'block';
+    localStorage.removeItem('vidonthedev_pending_verification');
+    showAccount();
+  }
 
   const {data,error} = await db.from('orders')
     .select('id,service,price_cents,status,created_at')
@@ -351,12 +422,15 @@ async function checkout() {
   }
 }
 
-db.auth.onAuthStateChange(() => {
-  loadAccount();
+db.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+    loadAccount(event);
+  }
 });
 
 loadAccount();
 renderCart();
 </script>
+
 </body>
 </html>
