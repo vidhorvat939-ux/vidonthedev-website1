@@ -3,117 +3,180 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vidonthedev | Roblox Development</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f5f3ed;color:#171717;font-family:Arial,sans-serif}
-header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd}
-.logo{font-weight:900;font-size:23px}
-nav a{margin-left:18px;color:#171717;text-decoration:none}
-.hero{padding:90px 8%;background:#d9ff66}
-.hero h1{font-size:clamp(45px,9vw,85px);line-height:.98;margin:15px 0}
-.hero p{font-size:18px;max-width:500px;line-height:1.6}
-.tag{font-weight:bold;letter-spacing:2px}
-section{padding:65px 8%}
-h2{font-size:38px}
-.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{background:white;padding:25px;border-radius:14px;border:1px solid #ddd}
-.card h3{font-size:23px}
-.price{font-size:25px;font-weight:bold}
-button{background:#d9ff66;border:0;padding:14px 20px;border-radius:8px;font-weight:bold;cursor:pointer}
-.cart{background:#171717;color:white;border-radius:14px;padding:25px;margin-top:25px}
-.cart button{margin-top:12px}
-footer{padding:35px 8%;background:#171717;color:white}
-a{color:inherit}
+header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#f5f3ed;border-bottom:1px solid #ddd;z-index:5}
+.logo{font-weight:900;font-size:22px}
+nav{display:flex;gap:9px}
+button{background:#d9ff66;border:0;border-radius:8px;padding:12px 16px;font-weight:bold;cursor:pointer}
+.secondary{background:white;border:1px solid #ddd}
+.hero{padding:85px 8%;background:#d9ff66}
+.hero h1{font-size:clamp(48px,9vw,85px);line-height:.95;margin:20px 0}
+.hero p{max-width:500px;line-height:1.6}
+section{padding:60px 8%}
+h2{font-size:36px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card,.panel{background:white;border:1px solid #ddd;border-radius:14px;overflow:hidden}
+.card img{width:100%;height:180px;object-fit:cover}
+.content{padding:20px}
+.price{font-size:25px;font-weight:bold;margin:15px 0}
+.tag{font-size:12px;letter-spacing:2px;font-weight:bold}
+.panel{padding:22px;margin-top:20px}
+input{width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;font-size:16px}
+#cartPanel,#accountPanel{display:none}
+.order{padding:15px 0;border-bottom:1px solid #ddd}
+footer{background:#171717;color:white;padding:35px 8%}
+.small{font-size:13px;color:#777}
 </style>
 </head>
 <body>
 <header>
 <div class="logo">VIDONTHEDEV.</div>
-<nav><a href="#services">Services</a><a href="#about">About</a><a href="#contact">Contact</a></nav>
+<nav>
+<button class="secondary" onclick="showCart()">🛒 <span id="count">0</span></button>
+<button class="secondary" onclick="showAccount()">Account</button>
+</nav>
 </header>
 
 <div class="hero">
 <div class="tag">ROBLOX GAME DEVELOPMENT</div>
 <h1>LET'S BUILD<br>SOMETHING<br>AWESOME.</h1>
-<p>Roblox scripting, building and UI development. Turning your game ideas into reality.</p>
-<button onclick="document.querySelector('#services').scrollIntoView({behavior:'smooth'})">EXPLORE SERVICES ↓</button>
+<p>Roblox scripting, building and UI development. Turning your ideas into reality.</p>
+<button onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">EXPLORE SERVICES ↓</button>
 </div>
 
 <section id="services">
 <div class="tag">WHAT I OFFER</div>
 <h2>Development services.</h2>
-<div class="services">
+<div class="grid">
 <div class="card">
-<h3>Scripting</h3>
-<p>Gameplay systems, coins, shops, leaderboards and more.</p>
-<div class="price">€10</div>
-<button onclick="add('Scripting',10)">Add to cart</button>
+<img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/5X/5/f/8/2/5f821740100acc6a57d399af41a11eb9dc4bdc26.jpeg" alt="Roblox Studio environment example">
+<div class="content"><h3>Scripting</h3><p>Gameplay systems, coins, shops and leaderboards.</p><div class="price">€10</div><button onclick="add('Scripting')">Add to cart</button></div>
 </div>
 <div class="card">
-<h3>UI Design</h3>
-<p>Custom menus, shops, inventories and interfaces.</p>
-<div class="price">€10</div>
-<button onclick="add('UI Design',10)">Add to cart</button>
+<img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/5X/4/6/8/c/468c726774f5cc6515ac899ba5a12263507cef6d.png" alt="Roblox UI example">
+<div class="content"><h3>UI Design</h3><p>Custom menus, shops and inventories.</p><div class="price">€10</div><button onclick="add('UI Design')">Add to cart</button></div>
 </div>
 <div class="card">
-<h3>Map Building</h3>
-<p>Lobbies, arenas and custom Roblox environments.</p>
-<div class="price">€15</div>
-<button onclick="add('Map Building',15)">Add to cart</button>
+<img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/3/3/5/335a066b79f69e39bad03affa400fee1eced4a14.jpeg" alt="Roblox map example">
+<div class="content"><h3>Map Building</h3><p>Lobbies, arenas and custom environments.</p><div class="price">€10</div><button onclick="add('Map Building')">Add to cart</button></div>
 </div>
 <div class="card">
-<h3>Game Systems</h3>
-<p>Complete gameplay features and interactive systems.</p>
-<div class="price">€20</div>
-<button onclick="add('Game Systems',20)">Add to cart</button>
+<img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/9/9/3/99338e060993e8b489d300f0f165284f1946eb42.jpeg" alt="Roblox simulator example">
+<div class="content"><h3>Game Systems</h3><p>Gameplay features and interactive systems.</p><div class="price">€10</div><button onclick="add('Game Systems')">Add to cart</button></div>
 </div>
 </div>
+<p class="small">Images are third-party examples, not my own completed projects.</p>
+</section>
 
-<div class="cart">
+<section id="cartPanel">
 <h2>Your cart</h2>
-<div id="items">Your cart is empty.</div>
-<h3 id="total">Total: €0</h3>
+<div class="panel">
+<p id="cartItem">Your cart is empty.</p>
+<h3>Total: €<span id="total">0</span></h3>
 <button onclick="checkout()">Continue to PayPal →</button>
-<p><small>Final project scope and price must be agreed before payment.</small></p>
+<button class="secondary" onclick="removeItem()">Remove item</button>
 </div>
 </section>
 
-<section id="about">
-<div class="tag">ABOUT ME</div>
-<h2>Building Roblox experiences.</h2>
-<p>I create Roblox scripts, interfaces, maps and gameplay systems. Have an idea? Let's make it happen.</p>
+<section id="accountPanel">
+<h2>Customer account</h2>
+<div class="panel" id="authBox">
+<label>Email</label><input id="email" type="email" placeholder="Your email">
+<label>Password</label><input id="password" type="password" placeholder="Password">
+<button onclick="signUp()">Create account</button>
+<button class="secondary" onclick="signIn()">Sign in</button>
+<p id="message"></p>
+</div>
+<div class="panel" id="userBox" style="display:none">
+<p>Signed in as <b id="userEmail"></b></p>
+<button onclick="signOut()">Sign out</button>
+<h3>My orders</h3><div id="orders"></div>
+</div>
 </section>
 
-<section id="contact">
-<div class="tag">LET'S WORK TOGETHER</div>
-<h2>Have a project?</h2>
-<p>Email: <a href="mailto:vidhorvat939@gmail.com">vidhorvat939@gmail.com</a></p>
+<section>
+<div class="tag">ABOUT</div><h2>Building Roblox experiences.</h2>
+<p>I create Roblox scripts, interfaces, maps and gameplay systems.</p>
 </section>
-
-<footer>© 2026 VIDONTHEDEV. All rights reserved.</footer>
+<section>
+<div class="tag">CONTACT</div><h2>Have a project?</h2>
+<p><a href="mailto:vidhorvat939@gmail.com">vidhorvat939@gmail.com</a></p>
+</section>
+<footer>© 2026 VIDONTHEDEV.</footer>
 
 <script>
-let cart=[];
-function add(name,price){
- cart.push({name,price});
- render();
+const db=window.supabase.createClient(
+'https://acbjfgxtthlopvlkemhd.supabase.co',
+'sb_publishable_INWhL1eZJEN8E2gBzifZzQ_mM3iWUdZ'
+);
+const PAYPAL='https://www.paypal.com/ncp/payment/BH2T68CX9J5TG';
+let cart=null;
+
+function add(name){
+ if(cart){alert('Only one service per order. Remove the current item first.');return}
+ cart=name;renderCart();showCart();
 }
-function removeItem(i){
- cart.splice(i,1);
- render();
+function renderCart(){
+ document.getElementById('count').textContent=cart?1:0;
+ document.getElementById('cartItem').textContent=cart?cart+' — €10':'Your cart is empty.';
+ document.getElementById('total').textContent=cart?'10':'0';
 }
-function render(){
- document.getElementById('items').innerHTML=cart.length
- ? cart.map((item,i)=>`${item.name} — €${item.price} <button onclick="removeItem(${i})">Remove</button>`).join('<br><br>')
- : 'Your cart is empty.';
- document.getElementById('total').textContent='Total: €'+cart.reduce((s,x)=>s+x.price,0);
+function removeItem(){cart=null;renderCart()}
+function showCart(){
+ document.getElementById('cartPanel').style.display='block';
+ document.getElementById('accountPanel').style.display='none';
+ document.getElementById('cartPanel').scrollIntoView({behavior:'smooth'});
 }
-function checkout(){
- if(!cart.length){alert('Your cart is empty!');return;}
- window.location.href='https://www.paypal.com/ncp/payment/BH2T68CX9J5TG';
+function showAccount(){
+ document.getElementById('accountPanel').style.display='block';
+ document.getElementById('cartPanel').style.display='none';
+ document.getElementById('accountPanel').scrollIntoView({behavior:'smooth'});
 }
+async function signUp(){
+ const {error}=await db.auth.signUp({
+ email:document.getElementById('email').value.trim(),
+ password:document.getElementById('password').value
+ });
+ document.getElementById('message').textContent=error?error.message:'Check your email to confirm your account.';
+}
+async function signIn(){
+ const {error}=await db.auth.signInWithPassword({
+ email:document.getElementById('email').value.trim(),
+ password:document.getElementById('password').value
+ });
+ document.getElementById('message').textContent=error?error.message:'Signed in!';
+ if(!error)loadAccount();
+}
+async function signOut(){await db.auth.signOut();loadAccount()}
+async function loadAccount(){
+ const {data:{session}}=await db.auth.getSession();
+ document.getElementById('authBox').style.display=session?'none':'block';
+ document.getElementById('userBox').style.display=session?'block':'none';
+ if(!session)return;
+ document.getElementById('userEmail').textContent=session.user.email;
+ const {data,error}=await db.from('orders').select('id,service,price_cents,status,created_at').order('created_at',{ascending:false});
+ document.getElementById('orders').innerHTML=error?error.message:
+ data.length?data.map(o=>`<div class="order"><b>${o.service}</b><br>€${(o.price_cents/100).toFixed(2)}<br>Status: ${o.status}<br><span class="small">${new Date(o.created_at).toLocaleString()}</span></div>`).join(''):'No orders yet.';
+}
+async function checkout(){
+ if(!cart){alert('Your cart is empty.');return}
+ const {data:{session}}=await db.auth.getSession();
+ if(!session){alert('Please sign in before ordering.');showAccount();return}
+ const {error}=await db.from('orders').insert({
+ user_id:session.user.id,service:cart,price_cents:1000,status:'Pending'
+ });
+ if(error){alert(error.message);return}
+ cart=null;renderCart();
+ alert('Order recorded. You will now be redirected to PayPal. Please check the payment amount before paying.');
+ window.location.href=PAYPAL;
+}
+db.auth.onAuthStateChange(()=>loadAccount());
+loadAccount();renderCart();
 </script>
 </body>
 </html>
