@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,14 +6,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vidonthedev | Roblox Developer</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:#f5f3ed;color:#171717;font-family:Arial,sans-serif}
 header{padding:18px 6%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#f5f3ed;border-bottom:1px solid #ddd;z-index:10}
 .logo{font-size:23px;font-weight:900;letter-spacing:-1px}
-nav{display:flex;align-items:center;gap:10px}
+nav{display:flex;gap:9px}
 button{background:#d9ff66;border:0;border-radius:8px;padding:13px 17px;font-weight:bold;cursor:pointer}
 button:hover{opacity:.8}
 .secondary{background:white;border:1px solid #ddd}
@@ -32,11 +32,11 @@ h2{font-size:clamp(30px,5vw,43px);letter-spacing:-1px}
 #cartPanel,#accountPanel{display:none}
 input{width:100%;padding:14px;margin:8px 0 16px;border:1px solid #ccc;border-radius:8px;font-size:16px}
 .order{padding:16px 0;border-bottom:1px solid #ddd}
-.status{font-weight:bold}
 .small{font-size:13px;color:#777;line-height:1.5}
 .about{background:#eae8df}
 footer{background:#171717;color:white;padding:40px 8%}
 a{color:inherit}
+button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:600px){
  header{padding:14px 4%}
  .logo{font-size:18px}
@@ -47,7 +47,6 @@ a{color:inherit}
 }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -59,7 +58,6 @@ a{color:inherit}
 </header>
 
 <main>
-
 <div class="hero">
   <div class="tag">ROBLOX GAME DEVELOPMENT</div>
   <h1>LET'S BUILD<br>SOMETHING<br>AWESOME.</h1>
@@ -70,17 +68,14 @@ a{color:inherit}
 <section id="mygames">
   <div class="tag">MY PORTFOLIO</div>
   <h2>Games I've Created.</h2>
-
   <div class="grid">
     <div class="card">
-      <img src="8067AA05-4B1E-4856-A2D6-682195D4C79C.png"
-           alt="Plants VS Dinosaurs Roblox thumbnail">
+      <img src="8067AA05-4B1E-4856-A2D6-682195D4C79C.png" alt="Plants VS Dinosaurs">
       <div class="content">
         <div class="tag">MY ROBLOX GAME</div>
         <h3>Plants VS Dinosaurs</h3>
         <p>A Roblox game featuring plants and dinosaurs.</p>
-        <a href="https://www.roblox.com/games/73358089459605/Plants-VS-Dinosaurs"
-           target="_blank">
+        <a href="https://www.roblox.com/games/73358089459605/Plants-VS-Dinosaurs" target="_blank">
           <button>PLAY GAME →</button>
         </a>
       </div>
@@ -91,7 +86,6 @@ a{color:inherit}
 <section id="services">
   <div class="tag">WHAT I OFFER</div>
   <h2>Development Services.</h2>
-
   <div class="grid">
 
     <div class="card">
@@ -144,7 +138,7 @@ a{color:inherit}
   <div class="panel">
     <p id="cartItem">Your cart is empty.</p>
     <h3>Total: €<span id="cartTotal">0</span></h3>
-    <button onclick="checkout()">CONTINUE TO PAYPAL →</button>
+    <button id="checkoutButton" onclick="checkout()">CONTINUE TO PAYPAL →</button>
     <button class="secondary" onclick="removeItem()">REMOVE ITEM</button>
     <p class="small">Only one service can be purchased per order.</p>
   </div>
@@ -184,7 +178,6 @@ a{color:inherit}
   <h2>Have a project?</h2>
   <p>Email: <a href="mailto:vidhorvat939@gmail.com">vidhorvat939@gmail.com</a></p>
 </section>
-
 </main>
 
 <footer>
@@ -194,137 +187,176 @@ a{color:inherit}
 </footer>
 
 <script>
-const db=window.supabase.createClient(
+const db = window.supabase.createClient(
   'https://acbjfgxtthlopvlkemhd.supabase.co',
   'sb_publishable_INWhL1eZJEN8E2gBzifZzQ_mM3iWUdZ'
 );
 
-const PAYPAL_URL='https://www.paypal.com/ncp/payment/BH2T68CX9J5TG';
-let cart=null;
+const PAYPAL_URL = 'https://www.paypal.com/ncp/payment/BH2T68CX9J5TG';
 
-function goTo(id){
- document.getElementById(id).scrollIntoView({behavior:'smooth'});
+let cart = null;
+let checkoutBusy = false;
+
+function goTo(id) {
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
 }
 
-function showCart(){
- document.getElementById('cartPanel').style.display='block';
- document.getElementById('accountPanel').style.display='none';
- goTo('cartPanel');
+function showCart() {
+  document.getElementById('cartPanel').style.display='block';
+  document.getElementById('accountPanel').style.display='none';
+  goTo('cartPanel');
 }
 
-function showAccount(){
- document.getElementById('accountPanel').style.display='block';
- document.getElementById('cartPanel').style.display='none';
- goTo('accountPanel');
+function showAccount() {
+  document.getElementById('accountPanel').style.display='block';
+  document.getElementById('cartPanel').style.display='none';
+  goTo('accountPanel');
 }
 
-function addToCart(service){
- if(cart){
-   alert('Only one service per order. Remove your current item first.');
-   return;
- }
- cart=service;
- renderCart();
- showCart();
+function addToCart(service) {
+  if (cart) {
+    alert('Only one service per order. Remove your current item first.');
+    return;
+  }
+  cart = service;
+  renderCart();
+  showCart();
 }
 
-function renderCart(){
- document.getElementById('cartCount').textContent=cart?1:0;
- document.getElementById('cartItem').textContent=cart?cart+' — €10':'Your cart is empty.';
- document.getElementById('cartTotal').textContent=cart?'10':'0';
+function renderCart() {
+  document.getElementById('cartCount').textContent = cart ? 1 : 0;
+  document.getElementById('cartItem').textContent =
+    cart ? cart + ' — €10' : 'Your cart is empty.';
+  document.getElementById('cartTotal').textContent = cart ? '10' : '0';
 }
 
-function removeItem(){
- cart=null;
- renderCart();
+function removeItem() {
+  cart = null;
+  renderCart();
 }
 
-async function signUp(){
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- const {error}=await db.auth.signUp({email,password});
- document.getElementById('authMessage').textContent=
- error?error.message:'Check your email to confirm your account.';
+async function signUp() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const {error} = await db.auth.signUp({email,password});
+
+  document.getElementById('authMessage').textContent =
+    error ? error.message : 'Check your email to confirm your account.';
 }
 
-async function signIn(){
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- const {error}=await db.auth.signInWithPassword({email,password});
- document.getElementById('authMessage').textContent=
- error?error.message:'Signed in!';
- if(!error)loadAccount();
+async function signIn() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const {error} = await db.auth.signInWithPassword({email,password});
+
+  document.getElementById('authMessage').textContent =
+    error ? error.message : 'Signed in successfully!';
+
+  if (!error) await loadAccount();
 }
 
-async function signOut(){
- await db.auth.signOut();
- loadAccount();
+async function signOut() {
+  await db.auth.signOut();
+  await loadAccount();
 }
 
-async function loadAccount(){
- const {data:{session}}=await db.auth.getSession();
+async function loadAccount() {
+  const {data:{session}} = await db.auth.getSession();
 
- document.getElementById('authBox').style.display=session?'none':'block';
- document.getElementById('userBox').style.display=session?'block':'none';
+  document.getElementById('authBox').style.display = session ? 'none' : 'block';
+  document.getElementById('userBox').style.display = session ? 'block' : 'none';
 
- if(!session)return;
+  if (!session) return;
 
- document.getElementById('userEmail').textContent=session.user.email;
+  document.getElementById('userEmail').textContent = session.user.email;
 
- const {data,error}=await db.from('orders')
- .select('id,service,price_cents,status,created_at')
- .order('created_at',{ascending:false});
+  const {data,error} = await db.from('orders')
+    .select('id,service,price_cents,status,created_at')
+    .order('created_at',{ascending:false});
 
- document.getElementById('orders').innerHTML=error
- ?'Could not load orders: '+error.message
- :data.length
- ?data.map(o=>`
- <div class="order">
- <b>${o.service}</b><br>
- €${(o.price_cents/100).toFixed(2)}<br>
- Status: <span class="status">${o.status}</span><br>
- <span class="small">${new Date(o.created_at).toLocaleString()}</span>
- </div>`).join('')
- :'No orders yet.';
+  const ordersElement = document.getElementById('orders');
+
+  if (error) {
+    ordersElement.textContent = 'Could not load orders: ' + error.message;
+    return;
+  }
+
+  ordersElement.innerHTML = data.length
+    ? data.map(o => `
+      <div class="order">
+        <b>${escapeHTML(o.service)}</b><br>
+        €${(o.price_cents/100).toFixed(2)}<br>
+        Status: ${escapeHTML(o.status)}<br>
+        <span class="small">${new Date(o.created_at).toLocaleString()}</span>
+      </div>
+    `).join('')
+    : 'No orders yet.';
 }
 
-async function checkout(){
- if(!cart){
-   alert('Your cart is empty.');
-   return;
- }
-
- const {data:{session}}=await db.auth.getSession();
-
- if(!session){
-   alert('Please sign in before ordering.');
-   showAccount();
-   return;
- }
-
- const {error}=await db.from('orders').insert({
-   user_id:session.user.id,
-   service:cart,
-   price_cents:1000,
-   status:'Pending'
- });
-
- if(error){
-   alert('Order error: '+error.message);
-   return;
- }
-
- cart=null;
- renderCart();
-
- alert('Your order has been recorded. Please check the PayPal amount before paying.');
- window.location.href=PAYPAL_URL;
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
 }
 
-db.auth.onAuthStateChange(()=>loadAccount());
+async function checkout() {
+  if (checkoutBusy) return;
+
+  if (!cart) {
+    alert('Your cart is empty.');
+    return;
+  }
+
+  const {data:{session}} = await db.auth.getSession();
+
+  if (!session) {
+    alert('Please sign in before ordering.');
+    showAccount();
+    return;
+  }
+
+  checkoutBusy = true;
+  const button = document.getElementById('checkoutButton');
+  button.disabled = true;
+  button.textContent = 'CREATING ORDER...';
+
+  try {
+    const {data,error} = await db.functions.invoke('create-order', {
+      body: {service:cart}
+    });
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    cart = null;
+    renderCart();
+
+    if (data.emailSent) {
+      alert('Order created and notification email sent! You will now go to PayPal.');
+    } else {
+      alert('Order created, but the notification email failed. Please check your email setup.');
+    }
+
+    window.location.href = PAYPAL_URL;
+
+  } catch (error) {
+    console.error(error);
+    alert('Could not create order: ' + error.message);
+  } finally {
+    checkoutBusy = false;
+    button.disabled = false;
+    button.textContent = 'CONTINUE TO PAYPAL →';
+  }
+}
+
+db.auth.onAuthStateChange(() => {
+  loadAccount();
+});
+
 loadAccount();
 renderCart();
 </script>
-
 </body>
 </html>
